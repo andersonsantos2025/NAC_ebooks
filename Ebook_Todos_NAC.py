@@ -48,7 +48,6 @@ try:
     df = load_sheet(LISTAGEM_URL)
 except Exception as e:
     st.error(f"Não consegui carregar a planilha do GitHub.\n\nDetalhe: {e}")
-    st.caption(f"URL usada: {LISTAGEM_URL}")
     st.stop()
 
 # Esperado: A=índice, B=link PDF, C=URL da capa
@@ -71,11 +70,9 @@ if broken:
     with st.expander("Ver detalhes (linha | valor na planilha | após normalização)"):
         for lin, original, normal in broken:
             st.write(f"• Linha {lin}:")
-            st.write("  - planilha:", original)     # <- sem f-string
-            st.write("  - normalizado:", normal)    # <- sem f-string
+            st.write("  - planilha:", original)
+            st.write("  - normalizado:", normal)
             st.write("---")
-    st.caption("Use URLs RAW do GitHub, por exemplo:\n"
-               "https://raw.githubusercontent.com/andersonsantos2025/NAC_ebooks/main/img/01_captura.png")
     st.stop()
 
 # ---------- render (4 por linha) ----------
@@ -94,5 +91,3 @@ for i in range(0, len(links), 4):
                 """,
                 unsafe_allow_html=True,
             )
-
-st.caption(f"Fonte da planilha: {LISTAGEM_URL}")
