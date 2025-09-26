@@ -1,17 +1,15 @@
-# app.py
 import streamlit as st
 import pandas as pd
-import requests, io, urllib.parse
+import requests, io
 
 st.set_page_config(page_title="E-books do NAC", layout="wide")
 st.title("📚 E-books do NAC")
 
-# URL RAW da planilha (ajuste se mudar)
+# URL RAW da planilha (.xlsx)
 LISTAGEM_URL = "https://raw.githubusercontent.com/andersonsantos2025/NAC_ebooks/main/listagem.xlsx"
 
 # ---------- utils ----------
 def to_raw_github(url: str) -> str:
-    """Converte github.com/.../blob/... em raw.githubusercontent.com/..."""
     if not isinstance(url, str):
         return ""
     u = url.strip()
@@ -20,17 +18,12 @@ def to_raw_github(url: str) -> str:
     return u
 
 def url_sanitize(u: str) -> str:
-    """Remove espaços extras e codifica espaços como %20."""
-    u = u.strip()
-    # codificar apenas espaços; manter restante como veio
-    return u.replace(" ", "%20")
+    return u.strip().replace(" ", "%20")
 
 def normalize_image_url(u: str) -> str:
     if not isinstance(u, str) or not u.strip():
         return ""
-    u = to_raw_github(u)
-    u = url_sanitize(u)
-    return u
+    return url_sanitize(to_raw_github(u))
 
 def looks_like_image(content_type: str) -> bool:
     return isinstance(content_type, str) and content_type.lower().startswith("image/")
@@ -42,13 +35,11 @@ def load_sheet(url: str) -> pd.DataFrame:
     return pd.read_excel(io.BytesIO(r.content), header=None, engine="openpyxl")
 
 def check_image(url: str) -> bool:
-    """HEAD na URL; retorna True se for imagem acessível."""
     try:
         h = requests.head(url, allow_redirects=True, timeout=15)
         if h.status_code >= 400:
             return False
-        ct = h.headers.get("Content-Type", "")
-        return looks_like_image(ct)
+        return looks_like_image(h.headers.get("Content-Type", ""))
     except Exception:
         return False
 
@@ -68,10 +59,11 @@ links = df[1].astype(str).str.strip().tolist()
 raw_covers = df[2].astype(str).tolist()
 covers = [normalize_image_url(c) for c in raw_covers]
 
-# Validar capas (evita imagem quebrada)
+# Validar capas para evitar imagens quebradas
 broken = []
 for i, u in enumerate(covers, start=1):
-    if not (isinstance(u, str) and u.lower().startswith(("http://", "https://")) and check_image(u)):
+    ok = isinstance(u, str) and u.lower().startswith(("http://", "https://")) and check_image(u)
+    if not ok:
         broken.append((i, raw_covers[i-1], u))
 
 if broken:
@@ -79,4 +71,28 @@ if broken:
     with st.expander("Ver detalhes (linha | valor na planilha | após normalização)"):
         for lin, original, normal in broken:
             st.write(f"• Linha {lin}:")
-            st.write(f"  - planilha: {
+            st.write("  - planilha:", original)     # <- sem f-string
+            st.write("  - normalizado:", normal)    # <- sem f-string
+            st.write("---")
+    st.caption("Use URLs RAW do GitHub, por exemplo:\n"
+               "https://raw.githubusercontent.com/andersonsantos2025/NAC_ebooks/main/img/01_captura.png")
+    st.stop()
+
+# ---------- render (4 por linha) ----------
+for i in range(0, len(links), 4):
+    cols = st.columns(4)
+    for j in range(4):
+        k = i + j
+        if k >= len(links): break
+        with cols[j]:
+            st.markdown(
+                f"""
+                <a href="{links[k]}" target="_blank" rel="noopener">
+                  <img src="{covers[k]}" width="180"
+                       style="display:block;margin-bottom:10px;border-radius:12px;">
+                </a>
+                """,
+                unsafe_allow_html=True,
+            )
+
+st.caption(f"Fonte da planilha: {LISTAGEM_URL}")
