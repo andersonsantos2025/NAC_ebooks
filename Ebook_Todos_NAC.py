@@ -8,7 +8,7 @@ st.title("📚 E-books do NAC")
 # >>> Troque pela SUA URL RAW do GitHub (ou defina em Secrets)
 LISTAGEM_URL = st.secrets.get(
     "LISTAGEM_URL",
-    "https://github.com/andersonsantos2025/NAC_ebooks/raw/refs/heads/main/listagem.xlsx"  # <-- edite aqui
+    "https://raw.github.com/andersonsantos2025/NAC_ebooks/raw/refs/heads/main/listagem.xlsx"  # <-- edite aqui
 )
 
 def is_raw_github(url: str) -> bool:
