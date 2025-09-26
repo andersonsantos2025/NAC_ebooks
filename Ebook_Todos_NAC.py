@@ -13,7 +13,7 @@ st.title("📚 E-books do NAC")
 # ------------------------------------------------------------------
 LISTAGEM_URL = st.secrets.get(
     "LISTAGEM_URL",
-    "https://github.com/andersonsantos2025/NAC_ebooks/blob/84797c9b4f74465a6b27272b919e7a7659ab2785/listagem.xlsx"  # <-- troque para o seu repo
+    "https://github.com/andersonsantos2025/NAC_ebooks/raw/refs/heads/main/listagem.xlsx"  # <-- troque para o seu repo
 )
 
 # ------------------------------------------------------------------
